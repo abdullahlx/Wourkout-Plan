@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workout Plan — عبدالله</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+Arabic:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #eee; font-family: 'Noto Sans Arabic', sans-serif; direction: rtl; }
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; }
+  .header { padding: 16px 16px 10px; border-bottom: 1px solid #1a1a1a; position: sticky; top: 0; background: #0a0a0a; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+  .header-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; }
+  .header-sub { font-size: 11px; color: #666; margin-top: 2px; }
+  .tab-row { display: flex; }
+  .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; font-family: 'Noto Sans Arabic', sans-serif; font-size: 11px; padding: 5px 8px; cursor: pointer; color: #555; transition: all 0.2s; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .day-row { display: flex; gap: 8px; padding: 14px 16px 8px; overflow-x: auto; }
+  .day-btn { display: flex; flex-direction: column; align-items: center; padding: 10px 14px; border-radius: 12px; min-width: 68px; border: 1px solid #222; background: #161616; color: #666; cursor: pointer; transition: all 0.2s; font-family: 'Noto Sans Arabic', sans-serif; }
+  .day-btn.active { color: #000; }
+  .day-btn-icon { font-size: 18px; }
+  .day-btn-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 1px; }
+  .day-btn-num { font-size: 9px; opacity: 0.7; margin-top: 2px; }
+  .day-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; margin: 0 16px 8px; background: #111; border-radius: 12px; border: 1px solid #1a1a1a; }
+  .day-header-title { font-size: 20px; font-weight: 700; }
+  .day-header-muscles { font-size: 12px; color: #555; margin-top: 4px; }
+  .progress-ring { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+  .progress-pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Bebas Neue', sans-serif; font-size: 11px; font-weight: 700; color: #eee; }
+  .ex-list { padding: 0 16px 8px; display: flex; flex-direction: column; gap: 6px; }
+  .ex-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: 10px; border: 1px solid #1e1e1e; background: #131313; transition: all 0.2s; }
+  .ex-row.done { opacity: 0.5; background: #111; }
+  .ex-inner { display: flex; align-items: center; gap: 12px; flex: 1; }
+  .check-circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #333; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: all 0.15s; background: transparent; }
+  .check-circle.checked { background: var(--accent); border-color: var(--accent); }
+  .check-circle .tick { color: #000; font-size: 12px; font-weight: 900; display: none; }
+  .check-circle.checked .tick { display: block; }
+  .ex-info { flex: 1; }
+  .ex-name { font-size: 14px; font-weight: 600; color: #eee; direction: ltr; text-align: right; }
+  .ex-row.done .ex-name { color: #444; }
+  .ex-alt { color: #555; font-weight: 400; }
+  .ex-sets { font-size: 11px; color: #444; margin-top: 2px; direction: ltr; text-align: right; }
+  .muscle-tag { font-size: 10px; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+  .ex-hint { padding: 10px 16px 6px; font-size: 11px; color: #333; text-align: center; }
+  .macros-section { padding: 16px 16px 40px; }
+  .macros-title { font-size: 18px; font-weight: 700; color: #eee; margin-bottom: 16px; }
+  .calorie-card { border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; border: 1px solid #E8FF4744; background: #E8FF4708; }
+  .calorie-num { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #E8FF47; letter-spacing: 2px; }
+  .calorie-label { font-size: 13px; color: #888; }
+  .calorie-warn { font-size: 11px; color: #FF7847; margin-top: 6px; }
+  .macro-row { background: #111; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid; }
+  .macro-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .macro-name { font-weight: 700; color: #eee; font-size: 15px; }
+  .macro-note { font-size: 10px; color: #555; margin-top: 2px; }
+  .macro-val { text-align: right; }
+  .macro-num { font-family: 'Bebas Neue', sans-serif; font-size: 28px; }
+  .macro-unit { font-size: 12px; color: #555; }
+  .macro-cal { font-size: 10px; color: #444; }
+  .macro-bar-bg { margin-top: 10px; height: 4px; background: #1a1a1a; border-radius: 2px; overflow: hidden; }
+  .macro-bar-fill { height: 100%; border-radius: 2px; }
+  .macro-pct { font-size: 10px; color: #444; margin-top: 4px; text-align: right; }
+  .tips-card { margin-top: 20px; padding: 14px; background: #111; border-radius: 12px; border: 1px solid #222; }
+  .tips-title { font-size: 13px; font-weight: 700; color: #ccc; margin-bottom: 10px; }
+  .tip-item { font-size: 12px; color: #555; margin-bottom: 6px; display: flex; gap: 8px; }
+  .tip-dash { color: #E8FF47; }
+  .food-section { padding: 16px 16px 40px; }
+  .food-title { font-size: 18px; font-weight: 700; color: #eee; margin-bottom: 4px; }
+  .food-sub { font-size: 11px; color: #555; margin-bottom: 14px; }
+  .food-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .food-tab { background: #161616; border: 1px solid #222; border-radius: 20px; padding: 6px 16px; font-family: 'Noto Sans Arabic', sans-serif; font-size: 12px; color: #555; cursor: pointer; transition: all 0.2s; }
+  .food-tab.active { background: #162216; border-color: #A8FF7855; color: #A8FF78; }
+  .restaurant-card { background: #111; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid #1e1e1e; }
+  .rest-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .rest-name { font-size: 15px; font-weight: 700; color: #eee; }
+  .rest-tag { font-size: 10px; padding: 3px 8px; border-radius: 20px; background: #A8FF7815; border: 1px solid #A8FF7830; color: #A8FF78; white-space: nowrap; }
+  .rest-desc { font-size: 12px; color: #555; margin-bottom: 8px; line-height: 1.6; }
+  .rest-options { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rest-option { font-size: 11px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 4px 10px; color: #777; }
+  .mode-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
+  .mode-btn { flex: 1; background: #161616; border: 1px solid #222; border-radius: 10px; padding: 8px; font-family: 'Noto Sans Arabic', sans-serif; font-size: 12px; color: #555; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .mode-btn.active { background: #162216; border-color: #A8FF7855; color: #A8FF78; }
+  .calc-box { background: #0e0e0e; border-radius: 14px; padding: 16px; border: 1px solid #1e1e1e; }
+  .calc-label { font-size: 13px; font-weight: 700; color: #ccc; margin-bottom: 10px; }
+  .calc-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .calc-input { flex: 1; background: #161616; border: 1px solid #2a2a2a; border-radius: 10px; padding: 9px 10px; font-family: 'Noto Sans Arabic', sans-serif; font-size: 12px; color: #eee; direction: rtl; outline: none; min-width: 0; }
+  .calc-input:focus { border-color: #A8FF7855; }
+  .calc-input::placeholder { color: #333; }
+  .calc-add-btn { background: #A8FF7820; border: 1px solid #A8FF7840; border-radius: 10px; padding: 9px 14px; color: #A8FF78; font-family: 'Noto Sans Arabic', sans-serif; font-size: 14px; cursor: pointer; }
+  .quick-label { font-size: 11px; color: #444; margin-bottom: 8px; }
+  .quick-btn { background: #161616; border: 1px solid #2a2a2a; border-radius: 8px; padding: 4px 10px; font-size: 11px; color: #666; cursor: pointer; font-family: 'Noto Sans Arabic', sans-serif; }
+  .calc-items-list { margin: 12px 0 0; }
+  .calc-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #141414; border-radius: 8px; margin-bottom: 5px; border: 1px solid #1e1e1e; }
+  .calc-item-left { flex: 1; }
+  .calc-item-name { font-size: 13px; color: #bbb; }
+  .calc-item-nums { font-size: 11px; color: #555; direction: ltr; margin-top: 2px; }
+  .calc-item-del { color: #333; cursor: pointer; font-size: 18px; padding-right: 6px; }
+  .calc-total { background: #0d1a0d; border: 1px solid #A8FF7822; border-radius: 12px; padding: 14px; margin-top: 12px; }
+  .calc-total-title { font-size: 11px; color: #A8FF78; margin-bottom: 10px; font-weight: 700; letter-spacing: 1px; }
+  .calc-stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .calc-stat-label { font-size: 12px; color: #666; }
+  .calc-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 18px; }
+  .calc-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: #444; margin-bottom: 2px; }
+  .calc-bar-bg { height: 3px; background: #1a1a1a; border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+  .calc-bar-fill { height: 100%; border-radius: 2px; }
+  .calc-empty { text-align: center; font-size: 12px; color: #333; padding: 16px 0; }
+  .ai-box { background: #0a120a; border: 1px solid #A8FF7833; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  .ai-box-title { font-size: 13px; font-weight: 700; color: #A8FF78; margin-bottom: 10px; }
+  .ai-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .ai-input { flex: 1; background: #161616; border: 1px solid #2a2a2a; border-radius: 10px; padding: 10px 12px; font-family: 'Noto Sans Arabic', sans-serif; font-size: 13px; color: #eee; direction: rtl; outline: none; }
+  .ai-input:focus { border-color: #A8FF7855; }
+  .ai-input::placeholder { color: #333; }
+  .ai-btn { background: #A8FF7820; border: 1px solid #A8FF7840; border-radius: 10px; padding: 10px 14px; color: #A8FF78; font-family: 'Noto Sans Arabic', sans-serif; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .ai-btn:disabled { opacity: 0.4; cursor: default; }
+  .ai-result { background: #111; border-radius: 10px; padding: 12px; border: 1px solid #1e1e1e; }
+  .ai-result-name { font-size: 14px; font-weight: 700; color: #eee; margin-bottom: 8px; }
+  .ai-result-nums { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ai-num-tag { font-size: 12px; padding: 4px 10px; border-radius: 8px; }
+  .ai-add-btn { width: 100%; background: #A8FF7815; border: 1px solid #A8FF7840; border-radius: 10px; padding: 10px; color: #A8FF78; font-family: 'Noto Sans Arabic', sans-serif; font-size: 13px; cursor: pointer; }
+  .ai-loading { text-align: center; font-size: 12px; color: #555; padding: 12px; }
+  .ai-error { font-size: 12px; color: #FF7847; padding: 8px; text-align: center; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .fade-in { animation: fadeIn 0.3s ease forwards; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const plan = {
+  macros: { calories: 2000, protein: 224, carbs: 151, fat: 56 },
+  days: [
+    { id:1, label:"Push", icon:"💪", color:"#E8FF47", muscles:"الصدر • الكتف • الترايسبس",
+      exercises:[
+        {name:"Incline Press",alt:null,sets:"4×8-10",muscle:"صدر"},
+        {name:"Butterfly / Pec Deck",alt:null,sets:"3×12-15",muscle:"صدر"},
+        {name:"Chest Press Machine",alt:null,sets:"3×12",muscle:"صدر"},
+        {name:"Shoulder Press",alt:null,sets:"4×8-10",muscle:"كتف"},
+        {name:"Lateral Raise",alt:null,sets:"3×12-15",muscle:"كتف"},
+        {name:"Reverse Fly",alt:null,sets:"3×15",muscle:"كتف خلفي"},
+        {name:"Dips",alt:null,sets:"3×10-12",muscle:"ترايسبس"},
+        {name:"Overhead Tricep Extension",alt:null,sets:"3×12",muscle:"ترايسبس"},
+      ]},
+    { id:2, label:"Pull", icon:"🏋️", color:"#47C8FF", muscles:"الظهر • البايسبس • البطن",
+      exercises:[
+        {name:"T-Bar Row",alt:"Back Row Machine",sets:"4×8-10",muscle:"ظهر"},
+        {name:"Lat Pulldown",alt:null,sets:"4×10-12",muscle:"ظهر"},
+        {name:"Seated Row Machine",alt:null,sets:"3×10-12",muscle:"ظهر"},
+        {name:"Back Row Machine",alt:"T-Bar Row",sets:"3×10-12",muscle:"ظهر"},
+        {name:"Incline Dumbbell Curl",alt:null,sets:"3×12",muscle:"بايسبس"},
+        {name:"Preacher Curl",alt:null,sets:"3×10-12",muscle:"بايسبس"},
+        {name:"Cable Curl",alt:null,sets:"3×12-15",muscle:"بايسبس"},
+        {name:"Plank",alt:null,sets:"3×45s",muscle:"بطن"},
+        {name:"Crunch Machine",alt:null,sets:"3×15",muscle:"بطن"},
+      ]},
+    { id:3, label:"Legs", icon:"🦵", color:"#FF7847", muscles:"الكوادريسبس • الهامسترينج • الأداكتورز • الكالف",
+      exercises:[
+        {name:"Squat",alt:null,sets:"4×8-10",muscle:"كوادز"},
+        {name:"Leg Press",alt:null,sets:"4×10-12",muscle:"كوادز"},
+        {name:"Leg Extension",alt:null,sets:"3×15",muscle:"كوادز"},
+        {name:"Leg Curl",alt:null,sets:"4×10-12",muscle:"هامسترينج"},
+        {name:"Adductors Machine",alt:null,sets:"3×15",muscle:"أداكتورز"},
+        {name:"Calf Raise",alt:null,sets:"4×15-20",muscle:"كالف"},
+      ]},
+    { id:4, label:"Upper", icon:"🔱", color:"#C847FF", muscles:"صدر • ظهر • كتف • باي • تراي",
+      exercises:[
+        {name:"Bench Press",alt:null,sets:"4×8-10",muscle:"صدر"},
+        {name:"Cable Fly",alt:null,sets:"3×12-15",muscle:"صدر"},
+        {name:"Seated Row Machine",alt:null,sets:"4×10-12",muscle:"ظهر"},
+        {name:"Lateral Raise",alt:null,sets:"3×12-15",muscle:"كتف"},
+        {name:"Reverse Fly",alt:null,sets:"3×15",muscle:"كتف خلفي"},
+        {name:"Hammer Curl",alt:null,sets:"3×12",muscle:"بايسبس"},
+        {name:"Tricep Pushdown",alt:null,sets:"3×12-15",muscle:"ترايسبس"},
+      ]}
+  ]
+};
+
+const muscleColor = {
+  "صدر":"#E8FF47","كتف":"#A8FF78","كتف خلفي":"#A8FF78",
+  "ترايسبس":"#FF6B9D","ظهر":"#47C8FF","بايسبس":"#FFA500",
+  "كوادز":"#FF7847","هامسترينج":"#FF9547","أداكتورز":"#FFD700",
+  "كالف":"#FFB347","بطن":"#aaaaaa"
+};
+
+const restaurants = [
+  { name:"زيرو فاتي", tag:"بروتين عالي", desc:"وجبات محسوبة السعرات بأسعار معقولة. خيارات بروتين عالي وتنحيف وتثبيت وزن.", options:["دجاج مشوي + أرز","سلطة بروتين","وجبة دايت يومية"] },
+  { name:"فرش صب", tag:"طازج بدون حافظة", desc:"مكونات طازجة 100% بدون مواد حافظة. من أشهر خياراتهم السلمون المشوي مع الأرز.", options:["سلمون مشوي + أرز","ساندوتش بروتين","سلطة متكاملة"] },
+  { name:"دايت كوتش", tag:"اشتراكات + توصيل", desc:"وجبات للفتنس مع اشتراكات يومية وشهرية وتوصيل. مناسب لو تبي تجنب التفكير اليومي.", options:["باقة بروتين عالي","باقة تنحيف","وجبة فردية — من 440 ر"] },
+  { name:"لايا", tag:"صحي + لذيذ", desc:"خيارات دايت متنوعة بمذاق ممتاز. مرتاد من متابعي الفتنس بالرياض.", options:["وجبات دايت","سلطات","منخفض الكارب"] },
+  { name:"بوغا", tag:"مكونات طبيعية", desc:"سعرات محسوبة ومكونات طبيعية مع توصيل. خيار مناسب للالتزام اليومي.", options:["طبق بروتين","وجبة متوازنة","توصيل منزلي"] },
+];
+
+const foodDb = [
+  {name:"صدر دجاج مشوي",p:31,c:0,f:3.6,cal:165},
+  {name:"بيض مسلوق",p:6,c:0.6,f:5,cal:78},
+  {name:"تونا معلبة",p:26,c:0,f:1,cal:116},
+  {name:"أرز مسلوق",p:2.7,c:28,f:0.3,cal:130},
+  {name:"شوفان",p:17,c:66,f:7,cal:389},
+  {name:"جبن قريش",p:11,c:3,f:4,cal:98},
+  {name:"موز",p:1.1,c:23,f:0.3,cal:89},
+  {name:"بطاطس مشوية",p:2,c:17,f:0.1,cal:77},
+];
+
+// Load from localStorage
+function loadState(){try{const s=localStorage.getItem("wp_state");if(s){const d=JSON.parse(s);checked=d.checked||{};calcItems=d.calcItems||[];}}catch(e){}}
+function saveState(){try{localStorage.setItem("wp_state",JSON.stringify({checked,calcItems}));}catch(e){}}
+
+const API_KEY = "YOUR_API_KEY"; // ← ضع الـ API Key هنا
+
+let activeDay=0, activeTab="plan", checked={};
+let aiQuery="", aiLoading=false, aiResult=null;
+let foodSubTab="restaurants";
+let calcItems=[];
+let calcName="", calcP="", calcC="", calcF="", calcCal="", calcMode="macros"; // macros | calories
+
+function h(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+
+function render(){
+  const day=plan.days[activeDay];
+  document.documentElement.style.setProperty('--accent',day.color);
+  const done=day.exercises.filter((_,i)=>checked[`${activeDay}-${i}`]).length;
+  const pct=Math.round(done/day.exercises.length*100);
+  const circ=2*Math.PI*22, off=circ*(1-pct/100);
+
+  document.getElementById('app').innerHTML=`
+    <div class="header">
+      <div>
+        <div class="header-title" style="color:${day.color}">WORKOUT PLAN</div>
+        <div class="header-sub">عبدالله • ٢٦ سنة • ١٠٢ كغ • ١٨٥ سم</div>
+      </div>
+      <div class="tab-row">
+        <button class="tab-btn ${activeTab==='plan'?'active':''}" onclick="switchTab('plan')">الجدول</button>
+        <button class="tab-btn ${activeTab==='macros'?'active':''}" onclick="switchTab('macros')">الماكروز</button>
+        <button class="tab-btn ${activeTab==='food'?'active':''}" onclick="switchTab('food')">🍽️ الأكل</button>
+      </div>
+    </div>
+    ${activeTab==='plan'?rPlan(day,pct,circ,off):''}
+    ${activeTab==='macros'?rMacros():''}
+    ${activeTab==='food'?rFood():''}
+  `;
+}
+
+function rPlan(day,pct,circ,off){return `
+  <div class="fade-in">
+    <div class="day-row">
+      ${plan.days.map((d,i)=>`
+        <button class="day-btn ${activeDay===i?'active':''}"
+          style="${activeDay===i?`background:${d.color};border-color:${d.color};`:''}"
+          onclick="switchDay(${i})">
+          <span class="day-btn-icon">${d.icon}</span>
+          <span class="day-btn-label">${d.label}</span>
+          <span class="day-btn-num">Day ${d.id}</span>
+        </button>`).join('')}
+    </div>
+    <div class="day-header">
+      <div>
+        <div class="day-header-title" style="color:${day.color}">${day.icon} يوم ${day.label}</div>
+        <div class="day-header-muscles">${day.muscles}</div>
+      </div>
+      <div class="progress-ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#222" stroke-width="4"/>
+          <circle cx="28" cy="28" r="22" fill="none" stroke="${day.color}" stroke-width="4"
+            stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"
+            style="transform-origin:center;transform:rotate(-90deg)"/>
+        </svg>
+        <div class="progress-pct">${pct}%</div>
+      </div>
+    </div>
+    <div class="ex-list">
+      ${day.exercises.map((ex,i)=>{
+        const k=`${activeDay}-${i}`, dn=!!checked[k], mc=muscleColor[ex.muscle]||"#555";
+        return `<div class="ex-row ${dn?'done':''}">
+          <div class="ex-inner">
+            <div class="check-circle ${dn?'checked':''}" onclick="toggleCheck('${k}')" style="${dn?`background:${day.color};border-color:${day.color};`:''}">
+              <span class="tick">✓</span>
+            </div>
+            <div class="ex-info">
+              <div class="ex-name">${ex.name}${ex.alt?`<span class="ex-alt"> / ${ex.alt}</span>`:''}</div>
+              <div class="ex-sets">${ex.sets}</div>
+            </div>
+          </div>
+          <div class="muscle-tag" style="background:${h(mc,0.13)};border:1px solid ${h(mc,0.27)};color:${mc}">${ex.muscle}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="ex-hint">✦ الخيار البديل مفصول بـ / ✦ اضغط الدائرة لتحديد الإتمام</div>
+  </div>`;}
+
+function rMacros(){return `
+  <div class="macros-section fade-in">
+    <div class="macros-title">🥗 الماكروز اليومية</div>
+    <div class="calorie-card">
+      <div class="calorie-num">2,000</div>
+      <div class="calorie-label">سعرة حرارية يومياً</div>
+      <div class="calorie-warn">⚠️ عجزك ~1180 سعرة عن TDEE — راقب طاقتك وأداءك</div>
+    </div>
+    ${[
+      {label:"بروتين",val:224,unit:"g",cal:896,color:"#47C8FF",pct:45,note:"2.2g × 102kg"},
+      {label:"كربوهيدرات",val:151,unit:"g",cal:604,color:"#E8FF47",pct:30,note:"الطاقة الأساسية للتمارين"},
+      {label:"دهون",val:56,unit:"g",cal:500,color:"#FF7847",pct:25,note:"ضروري للهرمونات"},
+    ].map(m=>`
+      <div class="macro-row" style="border-color:${h(m.color,0.13)}">
+        <div class="macro-top">
+          <div><div class="macro-name">${m.label}</div><div class="macro-note">${m.note}</div></div>
+          <div class="macro-val"><span class="macro-num" style="color:${m.color}">${m.val}</span><span class="macro-unit">${m.unit}</span><div class="macro-cal">${m.cal} cal</div></div>
+        </div>
+        <div class="macro-bar-bg"><div class="macro-bar-fill" style="width:${m.pct}%;background:${m.color}"></div></div>
+        <div class="macro-pct">${m.pct}% من السعرات</div>
+      </div>`).join('')}
+    <div class="tips-card">
+      <div class="tips-title">💡 نصائح</div>
+      ${["وزّع البروتين على 4-5 وجبات طول اليوم","الكارب قبل التمرين وبعده","شرب الماء ≥ 3 لترات يومياً","أيام التمرين رفع الكارب +20g","أيام الراحة خفض الكارب -20g"]
+        .map(t=>`<div class="tip-item"><span class="tip-dash">—</span>${t}</div>`).join('')}
+    </div>
+  </div>`;}
+
+function rFood(){
+  const tot=calcItems.reduce((a,i)=>({p:a.p+i.p,c:a.c+i.c,f:a.f+i.f,cal:a.cal+i.cal}),{p:0,c:0,f:0,cal:0});
+  const tgt=plan.macros;
+  return `
+  <div class="food-section fade-in">
+    <div class="food-title">🍽️ الأكل</div>
+    <div class="food-sub">مطاعم صحية بالرياض + حاسبة ماكروز الوجبة</div>
+    <div class="food-tabs">
+      <button class="food-tab ${foodSubTab==='restaurants'?'active':''}" onclick="switchFoodTab('restaurants')">🗺️ المطاعم</button>
+      <button class="food-tab ${foodSubTab==='calc'?'active':''}" onclick="switchFoodTab('calc')">🧮 حاسبة الوجبة</button>
+    </div>
+    ${foodSubTab==='restaurants'?`
+      ${restaurants.map(r=>`
+        <div class="restaurant-card">
+          <div class="rest-header"><div class="rest-name">${r.name}</div><div class="rest-tag">${r.tag}</div></div>
+          <div class="rest-desc">${r.desc}</div>
+          <div class="rest-options">${r.options.map(o=>`<span class="rest-option">${o}</span>`).join('')}</div>
+        </div>`).join('')}
+      <div style="text-align:center;font-size:11px;color:#333;margin-top:8px">ابحث عنهم على Hunger Station أو Jahez</div>
+    `:`
+      <div class="ai-box">
+        <div class="ai-box-title">✨ احسب بالذكاء الاصطناعي</div>
+        <div class="ai-row">
+          <input class="ai-input" placeholder='مثال: بان كيك مع نوتيلا قطعة واحدة' value="${aiQuery}" oninput="aiQuery=this.value" onkeydown="if(event.key==='Enter')askAI()">
+          <button class="ai-btn" onclick="askAI()" ${aiLoading?'disabled':''}>
+            ${aiLoading?'⏳':'🔍'}
+          </button>
+        </div>
+        ${aiLoading?'<div class="ai-loading">جاري الحساب...</div>':''}
+        ${aiResult&&!aiLoading?`
+        <div class="ai-result">
+          <div class="ai-result-name">${aiResult.name}</div>
+          <div class="ai-result-nums">
+            <span class="ai-num-tag" style="background:#47C8FF22;color:#47C8FF">P: ${aiResult.p}g</span>
+            <span class="ai-num-tag" style="background:#E8FF4722;color:#E8FF47">C: ${aiResult.c}g</span>
+            <span class="ai-num-tag" style="background:#FF784722;color:#FF7847">F: ${aiResult.f}g</span>
+            <span class="ai-num-tag" style="background:#ffffff11;color:#888">${aiResult.cal} cal</span>
+          </div>
+          <button class="ai-add-btn" onclick="addAIResult()">+ أضف للوجبة</button>
+        </div>`:''}
+      </div>
+      <div class="calc-box">
+        <div class="calc-label">📝 أضف مكونات الوجبة</div>
+        <div class="mode-toggle">
+          <button class="mode-btn ${calcMode==='macros'?'active':''}" onclick="calcMode='macros';render()">🔢 ماكروز مفصل</button>
+          <button class="mode-btn ${calcMode==='calories'?'active':''}" onclick="calcMode='calories';render()">🔥 سعرات فقط</button>
+        </div>
+        <div class="calc-row">
+          <input class="calc-input" placeholder="اسم الأكل" value="${calcName}" oninput="calcName=this.value">
+        </div>
+        ${calcMode==='macros'?`
+        <div class="calc-row">
+          <input class="calc-input" placeholder="بروتين g" type="number" value="${calcP}" oninput="calcP=this.value" style="text-align:center">
+          <input class="calc-input" placeholder="كارب g" type="number" value="${calcC}" oninput="calcC=this.value" style="text-align:center">
+          <input class="calc-input" placeholder="دهون g" type="number" value="${calcF}" oninput="calcF=this.value" style="text-align:center">
+          <button class="calc-add-btn" onclick="addItem()">+</button>
+        </div>`:`
+        <div class="calc-row">
+          <input class="calc-input" placeholder="السعرات" type="number" value="${calcCal}" oninput="calcCal=this.value" style="text-align:center">
+          <button class="calc-add-btn" onclick="addItem()">+</button>
+        </div>`}
+        <div class="quick-label">أمثلة جاهزة (اضغط للإضافة):</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+          ${foodDb.map((f,i)=>`<button class="quick-btn" onclick="quickAdd(${i})">${f.name}</button>`).join('')}
+        </div>
+        <div class="calc-items-list">
+          ${calcItems.length===0?`<div class="calc-empty">لا يوجد مكونات — أضف من الأعلى</div>`:
+            calcItems.map((item,i)=>`
+              <div class="calc-item">
+                <div class="calc-item-left">
+                  <div class="calc-item-name">${item.name}</div>
+                  <div class="calc-item-nums">P:${item.p}g  C:${item.c}g  F:${item.f}g  — ${Math.round(item.cal)} cal</div>
+                </div>
+                <span class="calc-item-del" onclick="removeItem(${i})">×</span>
+              </div>`).join('')}
+        </div>
+        ${calcItems.length>0?`
+        <div class="calc-total">
+          <div class="calc-total-title">▸ مجموع الوجبة</div>
+          ${[
+            {label:"سعرات",val:Math.round(tot.cal),color:"#E8FF47",unit:"",max:tgt.calories},
+            {label:"بروتين",val:Math.round(tot.p),color:"#47C8FF",unit:"g",max:tgt.protein},
+            {label:"كارب",val:Math.round(tot.c),color:"#E8FF47",unit:"g",max:tgt.carbs},
+            {label:"دهون",val:Math.round(tot.f),color:"#FF7847",unit:"g",max:tgt.fat},
+          ].map(s=>{
+            const pct2=Math.min(110,Math.round(s.val/s.max*100));
+            const over=s.val>s.max;
+            return `
+            <div class="calc-stat-row">
+              <span class="calc-stat-label">${s.label}</span>
+              <span class="calc-stat-val" style="color:${over?'#FF4747':s.color}">${s.val}${s.unit}</span>
+            </div>
+            <div class="calc-bar-label"><span style="color:${over?'#FF474788':'#444'}">${pct2}% من الهدف اليومي</span><span style="color:#444">${s.max}${s.unit}</span></div>
+            <div class="calc-bar-bg"><div class="calc-bar-fill" style="width:${pct2}%;background:${over?'#FF4747':s.color}"></div></div>`;
+          }).join('')}
+        </div>`:''}
+      </div>
+    `}
+  </div>`;}
+
+function switchDay(i){activeDay=i;render();}
+function switchTab(t){activeTab=t;render();}
+function toggleCheck(k){checked[k]=!checked[k];saveState();render();}
+function switchFoodTab(t){foodSubTab=t;render();}
+function addItem(){
+  const n=calcName.trim();
+  if(!n)return;
+  let p=0,c=0,f=0,cal=0;
+  if(calcMode==='macros'){
+    p=parseFloat(calcP)||0; c=parseFloat(calcC)||0; f=parseFloat(calcF)||0;
+    cal=p*4+c*4+f*9;
+  } else {
+    cal=parseFloat(calcCal)||0;
+  }
+  calcItems.push({name:n,p,c,f,cal});
+  calcName="";calcP="";calcC="";calcF="";calcCal="";
+  saveState();render();
+}
+function removeItem(i){calcItems.splice(i,1);saveState();render();}
+function quickAdd(i){const f=foodDb[i];calcItems.push({name:f.name,p:f.p,c:f.c,f:f.f,cal:f.cal});saveState();render();}
+
+async function askAI(){
+  const q=aiQuery.trim();
+  if(!q||aiLoading)return;
+  aiLoading=true; aiResult=null; render();
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({
+        model:"claude-haiku-4-5-20251001",
+        max_tokens:200,
+        system:"أنت خبير تغذية. المستخدم يذكر وجبة أو أكلة. أعطه تقدير الماكروز لها. رد بـ JSON فقط بدون أي نص آخر: {name, p, c, f, cal} حيث p=بروتين, c=كارب, f=دهون بالجرام, cal=السعرات. كن دقيقاً في التقدير.",
+        messages:[{role:"user",content:q}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content[0].text.replace(/```json|```/g,"").trim();
+    const parsed=JSON.parse(text);
+    aiResult={name:parsed.name||q, p:Math.round(parsed.p||0), c:Math.round(parsed.c||0), f:Math.round(parsed.f||0), cal:Math.round(parsed.cal||0)};
+  }catch(e){aiResult={error:true};}
+  aiLoading=false; render();
+}
+
+function addAIResult(){
+  if(!aiResult||aiResult.error)return;
+  calcItems.push({name:aiResult.name, p:aiResult.p, c:aiResult.c, f:aiResult.f, cal:aiResult.cal});
+  aiResult=null; aiQuery="";
+  saveState(); render();
+}
+
+loadState();
+render();
+</script>
+</body>
+</html>
